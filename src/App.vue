@@ -1,11 +1,23 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <div id="app">
+    <NavBarComp /> 
+    <router-view />
+  </div>
 </template>
 
+<script>
+import TableComp from './components/TableComp.vue';
+import NavBarComp from './components/NavBarComp.vue';
+import HomeView from './views/HomeView.vue';
+export default{
+  name : "App",
+  components:{
+    NavBarComp,
+    TableComp,
+    HomeView
+  }
+}
+</script>
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
