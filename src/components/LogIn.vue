@@ -1,5 +1,5 @@
 <template>
-
+<HomeView/>
   <div class="login-page">
     <!-- Side Image -->
     <div class="side-image">
@@ -39,8 +39,7 @@
             placeholder="Enter your password"
           />
         </div>
-        <button type="submit" >Login</button>
-
+        <button type="button" @click="validate()">Login</button>
         <p class="opt3">————OR————</p>
 
         <div class="links">
@@ -58,11 +57,18 @@
 
 
 <script>
-import EmployeePortal from './Employee portal.vue';
+// import TableComp from './TableComp.vue';
+// import NavBarComp from './NavBarComp.vue';
+// import HomeView from '../views/HomeView.vue'
+// import HomeView from '../views/HomeView.vue';
 
 export default {
+  name: "logIn",
     components: {
-      EmployeePortal
+    //   NavBarComp,
+    // TableComp,
+    // HomeView
+      
     },
     data() {
     return {
@@ -82,43 +88,51 @@ export default {
   },
   methods: {
     validate() {
+      console.log('hehte');
+      
       const isValidUser = this.loginUsers.some(
         (user) => user.email === this.email && user.password === this.password
       );
-
+      console.log(isValidUser, this.email, this.password);
+      
       if (isValidUser) {
+        console.log(isValidUser, this.email, this.password);
+
         // Navigate to another page (assuming Vue Router is used)
-        this.$router.push({ path: '/Employee potal.vue' });
+        this.$router.push("/home");
       } else {
         alert('Login failed');
       }
+    },
+        // Navigate to another page (assuming Vue Router is used)
+        // this.$router.push({ name: 'HomeView' });
+      
     }
-  }
-};
+    }
+    
+
+
 
 </script>
 
-<style>
 
+<style scoped>
 .login-page {
   display: flex;
   height: 100vh;
 }
-
 .side-image {
   flex: 1;
-  background-color: #f4f4f4;
+  background-color: #F4F4F4;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .side-image img {
   width: 120%;
   height: 100%;
   object-fit: cover;
 }
-
 .login-form {
   flex: 1;
   display: flex;
@@ -129,23 +143,19 @@ export default {
   background-color: white;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
 h2 {
   margin-bottom: 40px;
 }
-
 .form-group {
   margin-bottom: 15px;
   width: 100%;
   /* text-align: */
 }
-
 label {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
 }
-
 input {
   width: 100%;
   padding: 10px;
@@ -176,9 +186,8 @@ button {
   font-size: 16px;
   cursor: pointer;
 }
-
 button:hover {
-  background-color: #0056b3;
+  background-color: #0056B3;
 }
 .opt3{
     margin-bottom: 30px;
@@ -198,4 +207,28 @@ button:hover {
     text-decoration: none;
     color: lightblue;
 }
+/* For small mobile devices */
+@media (max-width: 480px) {
+  h2 {
+    font-size: 20px;
+  }
+}
+/* For tablets and smaller screens */
+@media (max-width: 768px) {
+  .login-page {
+    flex-direction: column;
+  }
+}
 </style>
+
+
+Message Xolani Sodam
+
+
+
+
+
+
+
+
+
