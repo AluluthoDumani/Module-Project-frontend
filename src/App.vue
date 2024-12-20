@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <NavBarComp /> 
+    
     <router-view />
   </div>
 </template>
@@ -9,16 +9,20 @@
 import TableComp from './components/TableComp.vue';
 import NavBarComp from './components/NavBarComp.vue';
 import HomeView from './views/HomeView.vue';
+import LogIn from './components/LogIn.vue';
+
 export default{
   name : "App",
   components:{
     NavBarComp,
     TableComp,
-    HomeView
+    HomeView,
+    LogIn
+
   }
 }
 </script>
-<style>
+<style scoped>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

@@ -1,16 +1,17 @@
 <template>
     <div>
-        <!-- <NavBarComp/> -->
-       <h1>Hi there</h1>
-       
+        <NavBarComp/>
+       <PayRoll/>
     </div>
 </template>
 <script>
 import NavBarComp from '@/components/NavBarComp.vue';
+import PayRoll from '@/components/Pay Roll.vue';
 export default {
     name: 'PayrollView',
   components: {
-   NavBarComp
+   NavBarComp,
+   PayRoll
   } 
 }
 </script>

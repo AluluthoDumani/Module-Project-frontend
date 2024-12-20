@@ -1,5 +1,6 @@
 <template>
     <div>
+      <!-- HeroSection for homepage -->
        <section class="hero">
         <video autoplay loop muted class="back-video">
         <source src="../assets/8721931-uhd_4096_2160_25fps.mp4" type="video/mp4" class="hero">
@@ -19,83 +20,112 @@ export default {
 };
 </script>
 <style>
-*{
-    padding: 0;
-    box-sizing: border-box;
-    margin: 0;
+* {
+  padding: 0;
+  box-sizing: border-box;
+  margin: 0;
 }
 
-  #logo {
-    padding-right: 300px;
-    color: rgb(255, 240, 240);
-    font-family: "Manrope", sans-serif;
-    font-size: large;
-  }
-    .hero {
-    width: 100%;
-    height: 100vh;
-    background-image: linear-gradient(rgba(12, 3, 51, 0.3), rgba(12, 3, 51, 0.3));
-    position: relative;
-    padding: 0 5%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden; 
-  }
-  
-  .back-video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover; 
-    z-index: -1; 
-  }
+#logo {
+  padding-right: 300px;
+  color: rgb(255, 240, 240);
+  font-family: "Manrope", sans-serif;
+  font-size: large;
+}
 
-  .content {
-    text-align: center;
-    justify-content: center;
-    color: white; 
-  }
-  
-  .content h1 {
-    font-size: 160px;
-    color: white;
-    font-weight: 600;
-    transition: 0.5s;
-  }
- 
+.hero {
+  width: 100%;
+  height: 100vh;
+  background-image: linear-gradient(rgba(12, 3, 51, 0.3), rgba(12, 3, 51, 0.3));
+  position: relative;
+  padding: 0 5%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.back-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+
+.content {
+  text-align: center;
+  justify-content: center;
+  color: white;
+}
+
+.content h1 {
+  font-size: 160px;
+  color: white;
+  font-weight: 600;
+  transition: 0.5s;
+}
+
 .content a {
-    text-decoration: none;
-    display: inline-block;
-    color: white;
-    font-size: 24px;
-    border: 2px solid white;
-    padding: 14px 15px;
-    transition: 0.3s;
-  } 
+  text-decoration: none;
+  display: inline-block;
+  color: white;
+  font-size: 24px;
+  border: 2px solid white;
+  padding: 14px 15px;
+  transition: 0.3s;
+}
 
-  .content h1:hover {
-    -webkit-text-stroke: 2px white;
-    color: transparent;
+.content h1:hover {
+  -webkit-text-stroke: 2px white;
+  color: transparent;
+}
+
+.content a:hover {
+  background-color: white;
+  color: rgba(12, 3, 51, 0.8);
+}
+
+@media (min-aspect-ratio: 16/9) {
+  .back-video {
+    width: 100%;
+    height: auto;
   }
-  .content a:hover {
-    background-color: white;
-    color: rgba(12, 3, 51, 0.8);
+}
+
+@media (max-aspect-ratio: 16/9) {
+  .back-video {
+    width: auto;
+    height: 100%;
   }
-  
-  @media (min-aspect-ratio: 16/9) {
-    .back-video {
-      width: 100%;
-      height: auto;
-    }
+}
+
+/* Media Queries for Mobile Devices */
+@media (max-width: 768px) {
+  .content h1 {
+    font-size: 80px;
   }
-  
-  @media (max-aspect-ratio: 16/9) {
-    .back-video {
-      width: auto;
-      height: 100%;
-    }
+
+  .content a {
+    font-size: 20px;
+    padding: 10px 12px;
   }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 10px;
+  }
+
+  .content h1 {
+    font-size: 50px;
+  }
+
+  .content a {
+    font-size: 16px;
+    padding: 8px 10px;
+  }
+}
 </style>

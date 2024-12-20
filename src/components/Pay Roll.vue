@@ -38,7 +38,7 @@
         <button type="submit">Generate Pay Slip</button>
       </form>
     </div>
-
+<!-- the page header -->
     <div v-if="showPaySlip" class="pay-slip">
       <h2>Pay Slip</h2>
       <div class="pay-slip-content" ref="paySlipContent">
@@ -53,6 +53,8 @@
           <p><strong>Pay Period:</strong> {{ currentMonth }}</p>
         </div>
         <div class="salary-breakdown">
+
+          <!-- my table for payslip -->
   <table class="pay-slip-table">
     <thead>
       <tr>
@@ -80,6 +82,7 @@
 
     <thead>
       <tr>
+        <!-- head for deduction -->
         <th colspan="2">Deductions</th>
       </tr>
     </thead>
@@ -107,6 +110,7 @@
   </table>
 </div>
       </div>
+      <!-- buttons -->
       <div class="button-group">
         <button @click="printPaySlip" class="print-btn">Print Pay Slip</button>
         <button @click="downloadPDF" class="download-btn">Download PDF</button>
@@ -120,7 +124,10 @@
 import { jsPDF } from 'jspdf'
 
 export default {
-  name: 'PayrollSystem',
+  name: 'Pay Roll',
+  component: {
+
+  },
   data() {
     return {
       employee: {
@@ -142,18 +149,22 @@ export default {
     },
     // Multiplies by 1.5 for time-and-a-half overtime rate
     overtimePay() {
-      const overtimeRate = 37.2 * (this.employee.basicSalary / 180) 
+      const overtimeRate = 37.2 * (this.employee.basicSalary / 2) 
       return this.employee.overtimeHours * overtimeRate
     },
+    // subtracts gross salary from allowances
     grossPay() {
       return this.employee.basicSalary + this.overtimePay + this.employee.allowances
     },
+    // Tav @ 15%
     tax() {
       return this.grossPay * 0.15
     },
+    // Adding deductions together
     totalDeductions() {
       return this.tax + this.pensionFund
     },
+    // net pay is the result of subtracting deductions from gross pay
     netPay() {
       return this.grossPay - this.totalDeductions
     }
@@ -162,9 +173,11 @@ export default {
     generatePaySlip() {
       this.showPaySlip = true
     },
+
     printPaySlip() {
       window.print()
     },
+    // downloads pdf function
     downloadPDF() {
       const doc = new jsPDF()
       
@@ -197,8 +210,8 @@ export default {
       doc.text(`Total Deductions: R${this.totalDeductions.toFixed(2)}`, 30, 200)
       
       // Net Pay The money after  deductions
-      autotable(doc, {})
-      doc.setFontSize(14)
+
+    
       doc.text(`Net Pay: R${this.netPay.toFixed(2)}`, 20, 220)
       
       doc.save(`payslip_${this.employee.name}_${this.currentMonth}.pdf`)
@@ -347,7 +360,7 @@ button {
   gap: 10px;
   margin-top: 20px;
 }
-
+/* media queries for mobiles */
 @media print {
   .employee-form,
   .button-group {
