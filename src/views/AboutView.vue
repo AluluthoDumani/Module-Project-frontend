@@ -18,24 +18,23 @@
     <!-- <h2>Modern Tech Employee Information</h2> -->
 
     <button @click="toggleForm" class="add-employee-btn">Add New Employee</button>
-    
-
-
+     
    <div v-if="showAddForm" class="add-employee-form">
       <h3>Add New Employee</h3>
     
     <form @submit.prevent="addEmployee">
+      <!-- <input v-model="newEmployee.employee_id" placeholder="Employee ID" required/> -->
 
     <input v-model="newEmployee.name" placeholder="Name" required/>
 
     <input v-model="newEmployee.position" placeholder="Position" required/>
 
 
-    <input v-model="newEmployee.department" placeholder="Department" required/>
+    <input v-model="newEmployee.department_name" placeholder="Department" required/>
 
-    <input v-model="newEmployee.salary" type="number" placeholder="Salary" required/>
+    <!-- <input v-model="newEmployee.departmentId" placeholder="Department ID" required/> -->
 
-    <input v-model="newEmployee.employmentHistory" placeholder="Employment History" required/>
+    <input v-model="newEmployee.employment_history" placeholder="Employment History" required/>
 
     <input v-model="newEmployee.contact" placeholder="Contact" required/>
 
@@ -53,26 +52,25 @@
           <th>EmployeeID</th>
           <th>Name</th>
           <th>Position</th>
-          <th>Department</th>
-          <th>Salary</th>
-          <th>EmploymentHistory</th>
+          <th>Department Name</th>
+          <th>Employment History</th>
           <th>Contact</th>
-          <th>Performance</th>
-          <th>--</th>
+          
         </tr>
       </thead>
       <tbody>
-        <tr v-for="employee in filteredEmployees" :key="employee.employeeId">
-          <td>{{ employee.employeeId }}</td>
+         <!-- <tr v-for="employee in filteredEmployees" :key="employee.employeeId">  -->
+             <tr v-for ="employee in $store.state.employees" :key="employee.employee_id">
+          <td>{{ employee.employee_id }}</td>
           <td>{{ employee.name }}</td>
           <td>{{ employee.position }}</td>
-          <td>{{ employee.department }}</td>
-          <td>{{ employee.salary }}</td>
-          <td>{{ employee.employmentHistory }}</td>
+          <td>{{ employee.department_name }}</td>
+          <td>{{ employee.employment_history }}</td>
           <td>{{ employee.contact }}</td>
-          <td>{{ employee.performance }}</td>
+          
           <td>
-          <button @click="deleteEmployee(employee.employeeId)" class="delete-btn">Remove</button> 
+          <button @click="deleteEmployee(employee.employee_id)" class="delete-btn">Remove</button> 
+          <button @click="editEmployee(employee.employeeId)" class="delete-btn">Edit</button> 
           </td>
         </tr>
       </tbody>
@@ -96,15 +94,14 @@ export default {
       searchQuery: '',
       showAddForm: false,
       newEmployee: {
-          name: '',
-          position: '',
-          department: '',
-          salary: '',
-          employmentHistory: '',
-          contact: '',
-          performance: '',
-      }, 
-      nextEmployeeId: 11,
+      name: '',
+      position: '',
+      department_id: '',
+      
+      employment_history: '',
+      contact: '',
+},   
+      // nextEmployeeId: 11,
     };
   },
   computed: {
@@ -116,59 +113,55 @@ export default {
     },
   },
   mounted() {
-    // Call the fetchUserdata function when the component is mounted
-    this.fetchUserData().then(data => {
-      this.employees = data;
-    }).catch(error => {
-      console.error("Error fetching user data:", error);
-    });
+    //  Call the fetchUserdata function when the component is mounted
+    //  this.fetchUserData().then(data => {
+    //    this.employees = data;
+    //  }).catch(error => {
+    //   console.error("Error fetching user data:", error);
+    //  });
+    // this.$store.dispatch('getData')
+    this.$store.dispatch('getData').then(() => {
+    console.log("Vuex Employees:", this.$store.state.employees);
+  });
+
   },
   methods: {
     // Fetch user data with a simulated delay
     fetchUserData() {
       return new Promise((resolve) => {
         setTimeout(() => {
-          const data = [
-          { employeeId: 1, name: "Sibongile Nkosi", position: "Software Engineer", department: "Development", salary: 70000, employmentHistory: "Joined in 2015, promoted to Senior in 2018", contact: "sibongile.nkosi@moderntech.com", performance: "Excellent and good  problem-solver" },
-              { employeeId: 2, name: "Lungile Moyo", position: "HR Manager", department: "HR", salary: 80000, employmentHistory: "Joined in 2013, promoted to Manager in 2017", contact: "lungile.moyo@moderntech.com" , performance: "Teamplayer and exceptional communicator"},
-              { employeeId: 3, name: "Thabo Molefe", position: "Quality Analyst", department: "QA", salary: 55000, employmentHistory: "Joined in 2018", contact: "thabo.molefe@moderntech.com"  , performance : "Good work Ethic"},
-              { employeeId: 4, name: "Keshav Naidoo", position: "Sales Representative", department: "Sales", salary: 60000, employmentHistory: "Joined in 2020", contact: "keshav.naidoo@moderntech.com" , performance : " Eager to learn and always" },
-              { employeeId: 5, name: "Zanele Khumalo", position: "Marketing Specialist", department: "Marketing", salary: 58000, employmentHistory: "Joined in 2019", contact: "zanele.khumalo@moderntech.com",  performance : " Excellent Punctiality" },
-              { employeeId: 6, name: "Sipho Zulu", position: "UI/UX Designer", department: "Design", salary: 65000, employmentHistory: "Joined in 2016", contact: "sipho.zulu@moderntech.com",  performance : "Vibrant and Outgoing " },
-              { employeeId: 7, name: "Naledi Moeketsi", position: "DevOps Engineer", department: "IT", salary: 72000, employmentHistory: "Joined in 2017", contact: "naledi.moeketsi@moderntech.com"  ,  performance : "Kind" },
-              { employeeId: 8, name: "Farai Gumbo", position: "Content Strategist", department: "Marketing", salary: 56000, employmentHistory: "Joined in 2021", contact: "farai.gumbo@moderntech.com"  , performance: "Always  late  and does not reach the deadline"},
-              { employeeId: 9, name: "Karabo Dlamini", position: "Accountant", department: "Finance", salary: 62000, employmentHistory: "Joined in 2018", contact: "karabo.dlamini@moderntech.com", performance:"Attention-seeker" },
-              { employeeId: 10, name: "Fatima Patel", position: "Customer Support Lead", department: "Support", salary: 58000, employmentHistory: "Joined in 2016", contact: "fatima.patel@moderntech.com", performance: "Passionate and Quet" },
-          ];
           resolve(data);
         }, 1000);
       });
     },
   
   addEmployee(){
-      const newEmployee ={
-          ...this.newEmployee,
-          employeeId: this.nextEmployeeId,
+  const newEmployee = {
+        ...this.newEmployee,
+        employee_id: this.nextEmployee_id,  // Include the new employee's ID (if it's generated on the client)
       };
-      this.employees.push(newEmployee);
-      this.nextEmployeeId++;
+      this.$store.dispatch('addEmployee', newEmployee);  // Dispatch the Vuex action to add the employee
+      this.nextEmployeeId++;  // Increment the next employee ID
       this.resetForm();
-  },
+    },
+
   resetForm() { 
   this.newEmployee={
       name: '',
       position: '',
       department: '',
-      salary: '',
       employmentHistory: '',
       contact: '',
-      performance: '',
+      
   };
   this.showAddForm=false;
 
   },
-  deleteEmployee(employeeId){
-      this.employees = this.employees.filter(employee => employee.employeeId !== employeeId);
+  // deleteEmployee(employeeId){
+  //     this.employees = this.employees.filter(employee => employee.employeeId !== employeeId);
+  deleteEmployee(employee_id) {
+    this.$store.dispatch('deleteEmployee', employee_id);  // Dispatch the action with the employee_id
+  
   },
 
   toggleForm(){
