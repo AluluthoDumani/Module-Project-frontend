@@ -42,7 +42,7 @@ export default createStore({
   actions: {
     async getData({ commit }) {
       try {
-        let response = await fetch('http://localhost:3500/employees');
+        let response = await fetch('http://localhost:4000/employees');
         let data = await response.json(); // Convert response to JSON
     
         console.log(data); // Debugging to check API response
@@ -59,7 +59,7 @@ export default createStore({
   
     async deleteEmployee({ commit }, employee_id) {
       try {
-        let response = await fetch(`http://localhost:3500/employees/${employee_id}`, {
+        let response = await fetch(`http://localhost:4000/employees/${employee_id}`, {
           method: 'DELETE'
         });
         if (response.ok) {
@@ -72,7 +72,7 @@ export default createStore({
   
     async addEmployee({ commit }, newEmployee) {
       try {
-        let response = await fetch('http://localhost:3500/employees', {
+        let response = await fetch('http://localhost:4000/employees', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ export default createStore({
     async updateEmployee({ commit }, { employeeId, name, position, departmentId, employmentHistory, contact }) {
       try {
         // Make the PATCH request to the backend
-        const response = await fetch(`http://localhost:3500/employees/${employeeId}`, {
+        const response = await fetch(`http://localhost:4000/employees/${employeeId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',

@@ -1,375 +1,144 @@
 <template>
-  <div class="payroll-system">
-    <h1>Payroll System</h1>
-    <div class="employee-form">
-      <h2>Employee Details</h2>
-      <form @submit.prevent="generatePaySlip">
-        <div class="form-group">
-          <label>Employee Name:</label>
-          <input v-model="employee.name" required>
-        </div>
-        <div class="form-group">
-          <label>Employee ID:</label>
-          <input v-model="employee.id" required>
-        </div>
-        <!-- Option for staff working in different departments -->
-        <div class="form-group">
-          <label>Department:</label>
-          <select v-model="employee.department" required>
-            <option value="">Select Department</option>
-            <option value="IT">IT</option>
-            <option value="HR">HR</option>
-            <option value="Finance">Finance</option>
-            <option value="Marketing">Marketing</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Basic Salary:</label>
-          <input type="number" v-model.number="employee.basicSalary" required>
-        </div>
-        <div class="form-group">
-          <label>Overtime Hours:</label>
-          <input type="number" v-model.number="employee.overtimeHours" required>
-        </div>
-        <div class="form-group">
-          <label>Allowances:</label>
-          <input type="number" v-model.number="employee.allowances" required>
-        </div>
-        <button type="submit">Generate Pay Slip</button>
-      </form>
+  <div class="payroll-container">
+    <h1>Employee Payroll</h1>
+    <div class="input-section">
+      <label for="employeeId">Enter Employee ID:</label>
+      <input v-model.number="searchId" type="number" id="employeeId" placeholder="Enter Employee ID">
+      <button @click="fetchEmployeeRecord">Search</button>
     </div>
-<!-- the page header -->
-    <div v-if="showPaySlip" class="pay-slip">
-      <h2>Pay Slip</h2>
-      <div class="pay-slip-content" ref="paySlipContent">
-        <div class="company-header">
-          <h3>ModernTech Solutions</h3>
-          <p>314 LC Academy, Lansdown</p>
+    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+    <div v-if="selectedRecord" class="payroll-details">
+      <h2>Payslip</h2>
+      <div class="payslip">
+        <div class="payslip-header">
+          <h3>Modern Tech Solutions</h3>
+          <p>314 Imam Haron Road, Landowne, Cape Town, SA</p>
         </div>
-        <div class="employee-details">
-          <p><strong>Employee Name:</strong> {{ employee.name }}</p>
-          <p><strong>Employee ID:</strong> {{ employee.id }}</p>
-          <p><strong>Department:</strong> {{ employee.department }}</p>
-          <p><strong>Pay Period:</strong> {{ currentMonth }}</p>
+        <div class="payslip-body">
+          <table>
+            <tr><td><strong>Employee ID:</strong></td><td>{{ selectedRecord.employee_id }}</td></tr>
+            <tr><td><strong>Payroll ID:</strong></td><td>{{ selectedRecord.payroll_id }}</td></tr>
+            <tr><td><strong>Hours Worked:</strong></td><td>{{ selectedRecord.hours_worked }}</td></tr>
+            <tr><td><strong>Leave Deduction:</strong></td><td>{{ selectedRecord.leave_deduction }}</td></tr>
+            <tr><td><strong>Base Rate (R):</strong></td><td>{{ baseRate }}</td></tr>
+            <tr><td><strong>Gross Salary (R):</strong></td><td>{{ grossSalary.toFixed(2) }}</td></tr>
+            <tr><td><strong>Final Salary (R):</strong></td><td><strong>{{ selectedRecord.final_salary.toFixed(2) }}</strong></td></tr>
+          </table>
         </div>
-        <div class="salary-breakdown">
-
-          <!-- my table for payslip -->
-  <table class="pay-slip-table">
-    <thead>
-      <tr>
-        <th colspan="2">Earnings</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Basic Salary</td>
-        <td class="amount">R{{ employee.basicSalary.toFixed(2) }}</td>
-      </tr>
-      <tr>
-        <td>Overtime Pay</td>
-        <td class="amount">R{{ overtimePay.toFixed(2) }}</td>
-      </tr>
-      <tr>
-        <td>Allowances</td>
-        <td class="amount">R{{ employee.allowances.toFixed(2) }}</td>
-      </tr>
-      <tr class="total">
-        <td>Gross Pay</td>
-        <td class="amount">R{{ grossPay.toFixed(2) }}</td>
-      </tr>
-    </tbody>
-
-    <thead>
-      <tr>
-        <!-- head for deduction -->
-        <th colspan="2">Deductions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Tax (15%)</td>
-        <td class="amount">R{{ tax.toFixed(2) }}</td>
-      </tr>
-      <tr>
-        <td>Pension Fund</td>
-        <td class="amount">R{{ pensionFund.toFixed(2) }}</td>
-      </tr>
-      <tr class="total">
-        <td>Total Deductions</td>
-        <td class="amount">R{{ totalDeductions.toFixed(2) }}</td>
-      </tr>
-    </tbody>
-
-    <tfoot>
-      <tr class="net-pay">
-        <td>Net Pay</td>
-        <td class="amount">R{{ netPay.toFixed(2) }}</td>
-      </tr>
-    </tfoot>
-  </table>
-</div>
+        <!-- <div class="payslip-footer">
+          <p><strong>Performance:</strong> {{ selectedRecord.performance }}</p>
+          <p>Authorized Signature: ______________________</p>
+        </div> -->
       </div>
-      <!-- buttons -->
       <div class="button-group">
-        <button @click="printPaySlip" class="print-btn">Print Pay Slip</button>
-        <button @click="downloadPDF" class="download-btn">Download PDF</button>
+        <button @click="printPaySlip">Print Pay Slip</button>
+        <button @click="downloadPDF">Download PDF</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-// Allows me to load pdfs npm install jspdf
-import { jsPDF } from 'jspdf'
-
+import { jsPDF } from "jspdf";
 export default {
-  name: 'Pay Roll',
-  component: {
-
-  },
   data() {
     return {
-      employee: {
-        name: '',
-        id: '',
-        department: '',
-        basicSalary: 0,
-        overtimeHours: 0,
-        allowances: 0
-      },
-      showPaySlip: false,
-      pensionFund: 100 // Fixed pension Fund amount
-    }
+      searchId: null,
+      errorMessage: "",
+      selectedRecord: null,
+      baseRate: 400, // Example base rate per hour
+      payrollRecords: [
+        { payroll_id: 1000, employee_id: 1, hours_worked: 160, leave_deduction: 8, final_salary: 65000, performance: "Good" },
+        { payroll_id: 1001, employee_id: 2, hours_worked: 150, leave_deduction: 10, final_salary: 79000, performance: "Good" },
+        { payroll_id: 1002, employee_id: 3, hours_worked: 170, leave_deduction: 4, final_salary: 54800, performance: "Good" },
+        { payroll_id: 1003, employee_id: 4, hours_worked: 165, leave_deduction: 6, final_salary: 59700, performance: "Bad" },
+        { payroll_id: 1004, employee_id: 5, hours_worked: 158, leave_deduction: 5, final_salary: 57850, performance: "Bad" }
+      ]
+    };
   },
   computed: {
-    currentMonth() {
-      const date = new Date()
-      return date.toLocaleString('default', { month: 'long', year: 'numeric' })
-    },
-    // Multiplies by 1.5 for time-and-a-half overtime rate
-    overtimePay() {
-      const overtimeRate = 37.2 * (this.employee.basicSalary / 2) 
-      return this.employee.overtimeHours * overtimeRate
-    },
-    // subtracts gross salary from allowances
-    grossPay() {
-      return this.employee.basicSalary + this.overtimePay + this.employee.allowances
-    },
-    // Tav @ 15%
-    tax() {
-      return this.grossPay * 0.15
-    },
-    // Adding deductions together
-    totalDeductions() {
-      return this.tax + this.pensionFund
-    },
-    // net pay is the result of subtracting deductions from gross pay
-    netPay() {
-      return this.grossPay - this.totalDeductions
+    grossSalary() {
+      return this.selectedRecord ? this.selectedRecord.hours_worked * this.baseRate : 0;
     }
   },
   methods: {
-    generatePaySlip() {
-      this.showPaySlip = true
+    fetchEmployeeRecord() {
+      this.selectedRecord = null;
+      this.errorMessage = "";
+      if (!this.searchId || this.searchId <= 0) {
+        this.errorMessage = "Please enter a valid Employee ID.";
+        return;
+      }
+      const record = this.payrollRecords.find(emp => emp.employee_id === this.searchId);
+      if (record) {
+        this.selectedRecord = record;
+      } else {
+        this.errorMessage = "No payroll record found for the entered Employee ID.";
+      }
     },
-
     printPaySlip() {
-      window.print()
+      window.print();
     },
-    // downloads pdf function
     downloadPDF() {
-      const doc = new jsPDF()
-      
-      // Company Header
-      doc.setFontSize(20)
-      doc.text('MordenTech Solutions', 20, 20)
-      doc.setFontSize(12)
-      doc.text('314 LC Academy, Lansdown', 20, 30)
-      
-      // Employee Details
-      doc.setFontSize(14)
-      doc.text('Pay Slip', 20, 45)
-      doc.setFontSize(12)
-      doc.text(`Employee Name: ${this.employee.name}`, 20, 60)
-      doc.text(`Employee ID: ${this.employee.id}`, 20, 70)
-      doc.text(`Department: ${this.employee.department}`, 20, 80)
-      doc.text(`Pay Period: ${this.currentMonth}`, 20, 90)
-      
-      // Earnings
-      doc.text('Earnings:', 20, 110)
-      doc.text(`Basic Salary: R${this.employee.basicSalary.toFixed(2)}`, 30, 120)
-      doc.text(`Overtime Pay: R${this.overtimePay.toFixed(2)}`, 30, 130)
-      doc.text(`Allowances: R${this.employee.allowances.toFixed(2)}`, 30, 140)
-      doc.text(`Gross Pay: R${this.grossPay.toFixed(2)}`, 30, 150)
-      
-      // Deductions
-      doc.text('Deductions:', 20, 170)
-      doc.text(`Tax (15%): R${this.tax.toFixed(2)}`, 30, 180)
-      doc.text(`Pension Fund: R${this.pensionFund.toFixed(2)}`, 30, 190)
-      doc.text(`Total Deductions: R${this.totalDeductions.toFixed(2)}`, 30, 200)
-      
-      // Net Pay The money after  deductions
-
-    
-      doc.text(`Net Pay: R${this.netPay.toFixed(2)}`, 20, 220)
-      
-      doc.save(`payslip_${this.employee.name}_${this.currentMonth}.pdf`)
+      const doc = new jsPDF();
+      doc.text("Payslip", 90, 10);
+      doc.text(`Employee ID: ${this.selectedRecord.employee_id}`, 10, 30);
+      doc.text(`Payroll ID: ${this.selectedRecord.payroll_id}`, 10, 40);
+      doc.text(`Hours Worked: ${this.selectedRecord.hours_worked}`, 10, 50);
+      doc.text(`Leave Deduction: ${this.selectedRecord.leave_deduction}`, 10, 60);
+      doc.text(`Base Rate: R${this.baseRate}`, 10, 70);
+      doc.text(`Gross Salary: R${this.grossSalary.toFixed(2)}`, 10, 80);
+      doc.text(`Final Salary: R${this.selectedRecord.final_salary.toFixed(2)}`, 10, 90);
+      doc.text(`Performance: ${this.selectedRecord.performance}`, 10, 100);
+      doc.save("Payslip.pdf");
     }
   }
-}
+};
 </script>
 
 <style scoped>
-.payroll-system {
-  max-width: 800px;
-  margin: 0 auto;
+.payroll-container {
+  max-width: 600px;
+  margin: 20px auto;
   padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
 }
-
-.employee-form {
-  background-color: #f5f5f5;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
+.payslip {
+  border: 2px solid #333;
+  padding: 15px;
+  border-radius: 10px;
+  background: #f9f9f9;
 }
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s;
-}
-
-.print-btn {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.print-btn:hover {
-  background-color: #45a049;
-}
-
-.download-btn {
-  background-color: #2196F3;
-  color: white;
-}
-
-.download-btn:hover {
-  background-color: #1976D2;
-}
-
-.pay-slip {
-  border: 1px solid #ddd;
-  padding: 30px;
-  border-radius: 8px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.company-header {
+.payslip-header, .payslip-footer {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
-
-.company-header h3 {
-  margin: 0;
-  color: #333;
-}
-
-.employee-details {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
-}
-.pay-slip-table {
+table {
   width: 100%;
   border-collapse: collapse;
-  margin: 20px 0;
 }
-
-.pay-slip-table th {
-  background-color: #f5f5f5;
-  padding: 12px;
-  text-align: left;
-  font-size: 16px;
-  border-bottom: 2px solid #ddd;
+td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
 }
-
-.pay-slip-table td {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.amount {
-  text-align: right;
-  font-family: monospace;
-}
-
-.total td {
-  border-top: 2px solid #ddd;
-  font-weight: bold;
-}
-
-.net-pay td {
-  font-size: 18px;
-  font-weight: bold;
-  color: #2196F3;
-  border-top: 2px solid #2196F3;
-}
-/* .salary-breakdown h4 {
-  color: #2196F3;
-  margin: 20px 0 10px;
-} */
-
-/* .net-pay {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 2px solid #eee;
-}
-
-.net-pay h4 {
-  color: #4CAF50;
-  font-size: 1.2em;
-} */
-
 .button-group {
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  justify-content: space-between;
+  margin-top: 10px;
 }
-/* media queries for mobiles */
-@media print {
-  .employee-form,
-  .button-group {
-    display: none;
-  }
-  
-  .pay-slip {
-    border: none;
-    box-shadow: none;
-  }
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background: #007BFF;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover {
+  background: #0056b3;
 }
 </style>
