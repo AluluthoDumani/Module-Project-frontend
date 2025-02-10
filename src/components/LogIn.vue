@@ -1,24 +1,25 @@
 <template>
-<HomeView/>
+  <HomeView/>
   <div class="login-page">
     <!-- Side Image -->
     <div class="side-image">
       <img src="@/assets/meg.jpg" alt="Side" />
     </div>
- 
+
     <!-- Login Form -->
     <div class="login-form">
       <h2>Login</h2>
       <form @submit.prevent="handleSubmit">
+        <!-- Occupation Selector -->
+        <div class="form-group1">
+          <label for="user-type">Occupation</label>
+          <select v-model="role" id="user-type" required>
+            <option value="Admin">Administrator</option>
+            <option value="Employee">Employee</option>
+          </select>
+        </div>
 
-      <div class="form-group1">
-      <label for="user-type">Occupation</label>
-      <select name="user-type" id="user-type">
-        <option value="Admin">Administrator</option>
-        <option value="employee">Employee</option>
-      </select required>
-      </div>
-
+        <!-- Email Input -->
         <div class="form-group">
           <label for="email">Email</label>
           <input
@@ -29,6 +30,8 @@
             placeholder="Enter your email"
           />
         </div>
+
+        <!-- Password Input -->
         <div class="form-group">
           <label for="password">Password</label>
           <input
@@ -39,81 +42,83 @@
             placeholder="Enter your password"
           />
         </div>
+
         <button type="button" @click="validate()">Login</button>
         <p class="opt3">————OR————</p>
 
         <div class="links">
-            <a class="link1" href="#">FORGOT PASSWORD</a>
-            <br>
-            <a class="link2" href="#">CREATE STAFF ACCOUNT</a>
+          <a class="link1" href="#">FORGOT PASSWORD</a>
+          <br />
+          <a class="link2" href="#">CREATE STAFF ACCOUNT</a>
         </div>
       </form>
-
+    </div>
   </div>
-</div>
 </template>
 
 
 
 
-<script>
-// import TableComp from './TableComp.vue';
-// import NavBarComp from './NavBarComp.vue';
-// import HomeView from '../views/HomeView.vue'
-// import HomeView from '../views/HomeView.vue';
 
+<script>
 export default {
   name: "logIn",
-    components: {
-    //   NavBarComp,
-    // TableComp,
-    // HomeView
-      
-    },
-    data() {
+  data() {
     return {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
+      role: "", // This will store the selected role
       loginUsers: [
         {
-          email: 'admin',
-          password: 'admin'
+          email: "admin",
+          role: "Admin",
+          password: "admin",
         },
         {
-          email: 'Kudos@gmail.com',
-          password: 'Fish_123'
-        }
-      ]
+          email: "Kudos@gmail.com",
+          role: "Employee",
+          password: "Fish_123",
+        },
+      ],
     };
   },
   methods: {
     validate() {
-      console.log('hehte');
-      
-      const isValidUser = this.loginUsers.some(
-        (user) => user.email === this.email && user.password === this.password
-      );
-      console.log(isValidUser, this.email, this.password);
-      
-      if (isValidUser) {
-        console.log(isValidUser, this.email, this.password);
+  console.log("Attempting to log in...");
+  console.log("Entered Email:", this.email);
+  console.log("Entered Password:", this.password);
+  console.log("Selected Role:", this.role);
 
-        // Navigate to another page (assuming Vue Router is used)
-        this.$router.push("/home");
-      } else {
-        alert('Login failed');
-      }
-    },
-        // Navigate to another page (assuming Vue Router is used)
-        // this.$router.push({ name: 'HomeView' });
-      
+  // Check the loginUsers array for matching credentials
+  const isValidUser = this.loginUsers.some(
+  (user) =>
+    user.email.trim() === this.email.trim() &&
+    user.password.trim() === this.password.trim() &&
+    user.role.trim() === this.role.trim()
+);
+
+
+  if (isValidUser) {
+    // Redirect based on the role
+    if (this.role === "Admin") {
+      this.$router.push("/home"); // Admin route
+    } else if (this.role === "Employee") {
+      this.$router.push("/employee-dashboard"); // Employee route
     }
-    }
-    
+  } else {
+    console.log("Invalid credentials or role.");
+    alert("Invalid login credentials or role.");
+    this.email = "";
+    this.password = "";
+    this.role = "";
+  }
+}
 
+}
 
-
+};
 </script>
+
 
 
 <style scoped>
@@ -222,7 +227,7 @@ button:hover {
 </style>
 
 
-Message Xolani Sodam
+
 
 
 
