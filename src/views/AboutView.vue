@@ -64,17 +64,42 @@
           <td>{{ employee.employee_id }}</td>
           <td>{{ employee.name }}</td>
           <td>{{ employee.position }}</td>
-          <td>{{ employee.department_name }}</td>
+          <td>{{ employee.department_id }}</td>
           <td>{{ employee.employment_history }}</td>
           <td>{{ employee.contact }}</td>
+
           
           <td>
-          <button @click="deleteEmployee(employee.employee_id)" class="delete-btn">Remove</button> 
+            <button @click="deleteEmployee(employee.employee_id)" class="delete-btn">Remove</button> 
           <button @click="editEmployee(employee.employeeId)" class="delete-btn">Edit</button> 
           </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Edit Form -->
+  <div v-if="editing" class="edit-form">
+    <h3>Edit Employee</h3>
+    <form @submit.prevent="submitEdit">
+      <label for="name">Name:</label>
+      <input type="text" v-model="editForm.name" required />
+
+      <label for="position">Position:</label>
+      <input type="text" v-model="editForm.position" required />
+
+      <label for="departmentId">Department:</label>
+      <input type="text" v-model="editForm.departmentId" required />
+
+      <label for="employmentHistory">Employment History:</label>
+      <input type="text" v-model="editForm.employmentHistory" required />
+
+      <label for="contact">Contact:</label>
+      <input type="text" v-model="editForm.contact" required />
+
+      <button type="submit">Update</button>
+    </form>
+  </div>
+
   </div>
 </template>
 
@@ -93,6 +118,7 @@ export default {
       employees: [],
       searchQuery: '',
       showAddForm: false,
+      editing: false,
       newEmployee: {
       name: '',
       position: '',
@@ -100,8 +126,16 @@ export default {
       
       employment_history: '',
       contact: '',
-},   
-      // nextEmployeeId: 11,
+
+},
+editForm: {
+        employee_id: null,
+        name: '',
+        position: '',
+        department_id: '',
+        employment_history: '',
+        contact: ''
+      },
     };
   },
   computed: {
@@ -113,15 +147,9 @@ export default {
     },
   },
   mounted() {
-    //  Call the fetchUserdata function when the component is mounted
-    //  this.fetchUserData().then(data => {
-    //    this.employees = data;
-    //  }).catch(error => {
-    //   console.error("Error fetching user data:", error);
-    //  });
-    // this.$store.dispatch('getData')
+    
     this.$store.dispatch('getData').then(() => {
-    console.log("Vuex Employees:", this.$store.state.employees);
+    console.log("Employees:", this.$store.state.employees);
   });
 
   },
@@ -163,12 +191,39 @@ export default {
     this.$store.dispatch('deleteEmployee', employee_id);  // Dispatch the action with the employee_id
   
   },
+  editEmployee(employeeId) {
+    // Find the employee by employee_id
+    const employee = this.employees.find(emp => emp.employee_id === employeeId);
 
+    // Set the employee data for editing
+    this.$store.dispatch('setEditEmployee', employee);
+    this.editing = true;  // Show the edit form
+  },
+
+  async submitEdit() {
+    const { employee_id, name, position, department_id, employment_history, contact } = this.editForm;
+    
+    try {
+      // Dispatch the update action to Vuex with the correct field names
+      await this.$store.dispatch('updateEmployee', {
+        employee_id,
+        name,
+        position,
+        department_id,
+        employment_history,
+        contact
+      });
+
+      this.editing = false;  // Hide the edit form after successful submission
+    } catch (error) {
+      console.error('Error updating employee:', error);
+    }
+  },
   toggleForm(){
       this.showAddForm = !this.showAddForm;
   }
  }
-};
+}
 
 </script>
 

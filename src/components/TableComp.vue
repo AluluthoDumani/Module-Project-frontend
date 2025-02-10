@@ -1,183 +1,169 @@
-<template >
-    <button class="btn-add" @click="addEmployee()"> Add Employee</button>
-    <buton class="btn-remove" @click="removeEmployee()"> Remove Employee</buton>
-    <table>
+<template>
+    <NavBarComp/>
+    <div class="page-container">
+      <section class="hero-section">
+        <div class="hero-text">
+          <h1>MODERN TECH Employee Information.</h1>
+          <p>Modern Tech Inc.</p>
+        </div>
+      </section>
+      <br> 
+  
+      <!-- Search bar -->
+      <input type="text" v-model="searchQuery" placeholder="Search by Name" />
+      <br>
+  
+      <button @click="toggleForm" class="add-employee-btn">Add New Employee</button>
+       
+      <div v-if="showAddForm" class="add-employee-form">
+        <h3>Add New Employee</h3>
+        <form @submit.prevent="addEmployee">
+          <input v-model="newEmployee.name" placeholder="Name" required/>
+          <input v-model="newEmployee.position" placeholder="Position" required/>
+          <input v-model="newEmployee.department_id" placeholder="Department" required/>
+          <input v-model="newEmployee.employment_history" placeholder="Employment History" required/>
+          <input v-model="newEmployee.contact" placeholder="Contact" required/>
+          <button type="submit">Add Employee</button>
+          <button @click.prevent="toggleForm">Cancel</button>
+        </form>
+      </div>
+  
+      <table>
         <thead>
-        <tr>
-            <th>Id No. </th>
+          <tr>
+            <th>EmployeeID</th>
             <th>Name</th>
             <th>Position</th>
-            <th>Departemnt</th>
-            <th>Salary</th>
-            <th>EmploymentHistory</th>
+            <th>Department</th>
+            <th>Employment History</th>
             <th>Contact</th>
-        </tr>
+          </tr>
         </thead>
-
-    <tr v-for=" employee in employeeInformation" :key="employee.employeeId">
-    <!-- <td>{{ index+1 }}</td> -->
-        <td>{{ employee.employeeId }}</td>
-        <td>{{ employee.name }}</td>
-        <td>{{ employee.position }}</td>
-        <td>{{ employee.department }}</td>
-        <td>{{ employee.salary }}</td>
-        <td>{{ employee.employmentHistory }}</td>
-        <td>{{ employee.contact }}</td>
-    </tr>
-
-    </table>
-
-    <form>
-    <div class="form-control">
-            <label>Id No.</label>
-            <input type="text" placeholder="jonh doe">
-            <br>
-            <label>Name</label>
-            <input type="text" placeholder="jonh doe">
-            <br>
-            <label>Position</label>
-            <input type="text" placeholder="jonh doe">
-            <br>
-            <label>Department</label>
-            <input type="text" placeholder="jonh doe">
-            <br>
-            <label>Salary</label>
-            <input type="text" placeholder="jonh doe">
-            <br>
-            <label>Employment History</label>
-            <input type="text" placeholder="jonh doe">
-            <br>
-            <label>Contact</label>
-            <input type="text" placeholder="jonh doe">
-        </div>
-        <button class="update-button" onclick="submit()"> Update</button>
-
-    </form>
-    
-</template>
-<script>
-import NavBarComp from './NavBarComp.vue';
-export default {
-    name: 'AboutView',
-    components: { 
-        NavBarComp},
-
-    data(){
-    return{
-        employeeInformation: [
-        {
-            "employeeId": 1,
-            "name": "Sibongile Nkosi",
-            "position": "Software Engineer",
-            "department": "Development",
-            "salary": 70000,
-            "employmentHistory": "Joined in 2015, promoted to Senior in 2018",
-            "contact": "sibongile.nkosi@moderntech.com"
+        <tbody>
+          <tr v-for="employee in filteredEmployees" :key="employee.employee_id">
+            <td>{{ employee.employee_id }}</td>
+            <td>{{ employee.name }}</td>
+            <td>{{ employee.position }}</td>
+            <td>{{ employee.department_id }}</td>
+            <td>{{ employee.employment_history }}</td>
+            <td>{{ employee.contact }}</td>
+            <td>
+              <button @click="deleteEmployee(employee.employee_id)" class="delete-btn">Remove</button>
+              <button @click="editEmployee(employee.employee_id)" class="delete-btn">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <!-- Edit Form -->
+      <div v-if="editing" class="edit-form">
+        <h3>Edit Employee</h3>
+        <form @submit.prevent="submitEdit">
+          <label for="name">Name:</label>
+          <input type="text" v-model="editForm.name" required />
+  
+          <label for="position">Position:</label>
+          <input type="text" v-model="editForm.position" required />
+  
+          <label for="department_id">Department:</label>
+          <input type="text" v-model="editForm.department_id" required />
+  
+          <label for="employment_history">Employment History:</label>
+          <input type="text" v-model="editForm.employment_history" required />
+  
+          <label for="contact">Contact:</label>
+          <input type="text" v-model="editForm.contact" required />
+  
+          <button type="submit">Update</button>
+        </form>
+      </div>
+    </div>
+  </template>
+  
+  <script>
+  import NavBarComp from '@/components/NavBarComp.vue';
+  
+  export default {
+    name: "AboutView",
+    components: {
+      NavBarComp
+    },
+    data() {
+      return {
+        searchQuery: '',
+        showAddForm: false,
+        editing: false,
+        newEmployee: {
+          name: '',
+          position: '',
+          department_id: '',
+          employment_history: '',
+          contact: '',
         },
-        {
-            "employeeId": 2,
-            "name": "Lungile Moyo",
-            "position": "HR Manager",
-            "department": "HR",
-            "salary": 80000,
-            "employmentHistory": "Joined in 2013, promoted to Manager in 2017",
-            "contact": "lungile.moyo@moderntech.com"
+        editForm: {
+          employee_id: null,
+          name: '',
+          position: '',
+          department_id: '',
+          employment_history: '',
+          contact: ''
         },
-        {
-            "employeeId": 3,
-            "name": "Thabo Molefe",
-            "position": "Quality Analyst",
-            "department": "QA",
-            "salary": 55000,
-            "employmentHistory": "Joined in 2018",
-            "contact": "thabo.molefe@moderntech.com"
-        },
-        {
-            "employeeId": 4,
-            "name": "Keshav Naidoo",
-            "position": "Sales Representative",
-            "department": "Sales",
-            "salary": 60000,
-            "employmentHistory": "Joined in 2020",
-            "contact": "keshav.naidoo@moderntech.com"
-        },
-        {
-            "employeeId": 5,
-            "name": "Zanele Khumalo",
-            "position": "Marketing Specialist",
-            "department": "Marketing",
-            "salary": 58000,
-            "employmentHistory": "Joined in 2019",
-            "contact": "zanele.khumalo@moderntech.com"
-        },
-        {
-            "employeeId": 6,
-            "name": "Sipho Zulu",
-            "position": "UI/UX Designer",
-            "department": "Design",
-            "salary": 65000,
-            "employmentHistory": "Joined in 2016",
-            "contact": "sipho.zulu@moderntech.com"
-        },
-        {
-            "employeeId": 7,
-            "name": "Naledi Moeketsi",
-            "position": "DevOps Engineer",
-            "department": "IT",
-            "salary": 72000,
-            "employmentHistory": "Joined in 2017",
-            "contact": "naledi.moeketsi@moderntech.com"
-        },
-        {
-            "employeeId": 8,
-            "name": "Farai Gumbo",
-            "position": "Content Strategist",
-            "department": "Marketing",
-            "salary": 56000,
-            "employmentHistory": "Joined in 2021",
-            "contact": "farai.gumbo@moderntech.com"
-        },
-        {
-            "employeeId": 9,
-            "name": "Karabo Dlamini",
-            "position": "Accountant",
-            "department": "Finance",
-            "salary": 62000,
-            "employmentHistory": "Joined in 2018",
-            "contact": "karabo.dlamini@moderntech.com"
-        },
-        {
-            "employeeId": 10,
-            "name": "Fatima Patel",
-            "position": "Customer Support Lead",
-            "department": "Support",
-            "salary": 58000,
-            "employmentHistory": "Joined in 2016",
-            "contact": "fatima.patel@moderntech.com"
-        },
-    ]
+      };
+    },
+    computed: {
+      filteredEmployees() {
+        return this.$store.state.employees.filter(employee =>
+          employee.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      }
+    },
+    mounted() {
+      this.$store.dispatch('getData');
+    },
+    methods: {
+      toggleForm() {
+        this.showAddForm = !this.showAddForm;
+      },
+      addEmployee() {
+        const newEmployee = { ...this.newEmployee };
+        this.$store.dispatch('addEmployee', newEmployee);
+        this.resetForm();
+      },
+      resetForm() {
+        this.newEmployee = {
+          name: '',
+          position: '',
+          department_id: '',
+          employment_history: '',
+          contact: ''
+        };
+        this.showAddForm = false;
+      },
+      deleteEmployee(employee_id) {
+        this.$store.dispatch('deleteEmployee', employee_id);
+      },
+      editEmployee(employee_id) {
+        const employee = this.$store.state.employees.find(emp => emp.employee_id === employee_id);
+        this.$store.dispatch('setEditEmployee', employee);
+        this.editing = true;
+      },
+      async submitEdit() {
+        const { employee_id, name, position, department_id, employment_history, contact } = this.editForm;
+        await this.$store.dispatch('updateEmployee', {
+          employee_id,
+          name,
+          position,
+          department_id,
+          employment_history,
+          contact
+        });
+        this.editing = false;
+      }
     }
-    }
-    
-}
-</script>
-<style scoped>
-*{
-    overflow: auto;
-}
-    table ,td ,th{
-        border: 1px solid black;
-        padding: 10px;
-        margin: 10px;
-        height: auto;
-        font-size: medium;
-        font-family: Georgia, 'Times New Roman', Times, serif;
-        box-sizing: border-box;
-    }
-    th , tr ,tbody {
-        border:2px solid black ;
-    }
-    .form-control{
-        padding: 10px;
-    }
-</style>
+  }
+  </script>
+  
+  <style scoped>
+  /* Style definitions */
+  </style>
+  
