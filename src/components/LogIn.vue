@@ -1,16 +1,12 @@
 <template>
-  <HomeView/>
   <div class="login-page">
-    <!-- Side Image -->
     <div class="side-image">
       <img src="@/assets/meg.jpg" alt="Side" />
     </div>
 
-    <!-- Login Form -->
     <div class="login-form">
       <h2>Login</h2>
-      <form @submit.prevent="handleSubmit">
-        <!-- Occupation Selector -->
+      <form @submit.prevent="validate">
         <div class="form-group1">
           <label for="user-type">Occupation</label>
           <select v-model="role" id="user-type" required>
@@ -19,31 +15,17 @@
           </select>
         </div>
 
-        <!-- Email Input -->
         <div class="form-group">
           <label for="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            v-model="email"
-            required
-            placeholder="Enter your email"
-          />
+          <input type="email" id="email" v-model.trim="email" required placeholder="Enter your email" />
         </div>
 
-        <!-- Password Input -->
         <div class="form-group">
           <label for="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            v-model="password"
-            required
-            placeholder="Enter your password"
-          />
+          <input type="password" id="password" v-model.trim="password" required placeholder="Enter your password" />
         </div>
 
-        <button type="button" @click="validate()">Login</button>
+        <button type="submit">Login</button>
         <p class="opt3">————OR————</p>
 
         <div class="links">
@@ -56,10 +38,6 @@
   </div>
 </template>
 
-
-
-
-
 <script>
 export default {
   name: "logIn",
@@ -67,15 +45,15 @@ export default {
     return {
       email: "",
       password: "",
-      role: "", // This will store the selected role
+      role: "",
       loginUsers: [
         {
-          email: "admin",
+          email: "admin@moderntech.com",
           role: "Admin",
           password: "admin",
         },
         {
-          email: "Kudos@gmail.com",
+          email: "kudos@gmail.com",
           role: "Employee",
           password: "Fish_123",
         },
@@ -84,40 +62,41 @@ export default {
   },
   methods: {
     validate() {
-  console.log("Attempting to log in...");
-  console.log("Entered Email:", this.email);
-  console.log("Entered Password:", this.password);
-  console.log("Selected Role:", this.role);
+      console.log("Attempting to log in...");
+      console.log("Entered Email:", `"${this.email}"`);
+      console.log("Entered Password:", `"${this.password}"`);
+      console.log("Selected Role:", `"${this.role}"`);
 
-  // Check the loginUsers array for matching credentials
-  const isValidUser = this.loginUsers.some(
-  (user) =>
-    user.email.trim() === this.email.trim() &&
-    user.password.trim() === this.password.trim() &&
-    user.role.trim() === this.role.trim()
-);
+      if (!this.role) {
+        alert("Please select a role");
+        return;
+      }
 
+      const isValidUser = this.loginUsers.some(
+        (user) =>
+          user.email.trim().toLowerCase() === this.email.trim().toLowerCase() &&
+          user.password.trim() === this.password.trim() &&
+          user.role.trim() === this.role.trim()
+      );
 
-  if (isValidUser) {
-    // Redirect based on the role
-    if (this.role === "Admin") {
-      this.$router.push("/home"); // Admin route
-    } else if (this.role === "Employee") {
-      this.$router.push("/employee-dashboard"); // Employee route
-    }
-  } else {
-    console.log("Invalid credentials or role.");
-    alert("Invalid login credentials or role.");
-    this.email = "";
-    this.password = "";
-    this.role = "";
-  }
-}
-
-}
-
+      if (isValidUser) {
+        if (this.role === "Admin") {
+          this.$router.push("/home");
+        } else if (this.role === "Employee") {
+          this.$router.push('/employee-dashboard');
+        }
+      } else {
+        console.log("Invalid credentials or role.");
+        alert("Invalid login credentials or role.");
+        this.email = "";
+        this.password = "";
+        this.role = "";
+      }
+    },
+  },
 };
 </script>
+
 
 
 

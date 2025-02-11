@@ -101,7 +101,7 @@ export default createStore({
       try {
         // Make the PATCH request to the backend
         const response = await fetch(`http://localhost:3500/employees/${employeeId}`, {
-          method: 'PATCH',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },

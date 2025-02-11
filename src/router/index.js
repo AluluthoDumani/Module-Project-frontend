@@ -4,12 +4,17 @@ import LogIn from '../components/LogIn.vue'
 import AboutView from '@/views/AboutView.vue'
 import AttendanceView from '@/views/AttendanceView.vue'
 import PayrollView from '@/views/PayrollView.vue'
+import employeeCom from '@/components/employeeCom.vue'
 
 const routes = [
   {
     path: '/',
     name: 'LogIn',
     component: LogIn
+  },
+  {path: '/employee-dashboard',
+    name: 'employee-dashboard',
+    component: employeeCom
   },
   {
     path: '/home',
