@@ -3,7 +3,12 @@
     <h1>Employee Payroll</h1>
     <div class="input-section">
       <label for="employeeId">Enter Employee ID:</label>
-      <input v-model.number="searchId" type="number" id="employeeId" placeholder="Enter Employee ID">
+      <input
+        v-model.number="searchId"
+        type="number"
+        id="employeeId"
+        placeholder="Enter Employee ID"
+      />
       <button @click="fetchEmployeeRecord">Search</button>
     </div>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
@@ -16,19 +21,40 @@
         </div>
         <div class="payslip-body">
           <table>
-            <tr><td><strong>Employee ID:</strong></td><td>{{ selectedRecord.employee_id }}</td></tr>
-            <tr><td><strong>Payroll ID:</strong></td><td>{{ selectedRecord.payroll_id }}</td></tr>
-            <tr><td><strong>Hours Worked:</strong></td><td>{{ selectedRecord.hours_worked }}</td></tr>
-            <tr><td><strong>Leave Deduction:</strong></td><td>{{ selectedRecord.leave_deduction }}</td></tr>
-            <tr><td><strong>Base Rate (R):</strong></td><td>{{ baseRate }}</td></tr>
-            <tr><td><strong>Gross Salary (R):</strong></td><td>{{ grossSalary.toFixed(2) }}</td></tr>
-            <tr><td><strong>Final Salary (R):</strong></td><td><strong>{{ selectedRecord.final_salary.toFixed(2) }}</strong></td></tr>
+            <tr>
+              <td><strong>Employee ID:</strong></td>
+              <td>{{ selectedRecord.employee_id }}</td>
+            </tr>
+            <tr>
+              <td><strong>Payroll ID:</strong></td>
+              <td>{{ selectedRecord.payroll_id }}</td>
+            </tr>
+            <tr>
+              <td><strong>Hours Worked:</strong></td>
+              <td>{{ selectedRecord.hours_worked }}</td>
+            </tr>
+            <tr>
+              <td><strong>Leave Deduction:</strong></td>
+              <td>{{ selectedRecord.leave_deduction }}</td>
+            </tr>
+            <tr>
+              <td><strong>Base Rate (R):</strong></td>
+              <td>{{ baseRate }}</td>
+            </tr>
+            <tr>
+              <td><strong>Gross Salary (R):</strong></td>
+              <td>{{ grossSalary.toFixed(2) }}</td>
+            </tr>
+            <tr>
+              <td><strong>Final Salary (R):</strong></td>
+              <td>
+                <strong>{{
+                  finalSalaryFormatted
+                }}</strong>
+              </td>
+            </tr>
           </table>
         </div>
-        <!-- <div class="payslip-footer">
-          <p><strong>Performance:</strong> {{ selectedRecord.performance }}</p>
-          <p>Authorized Signature: ______________________</p>
-        </div> -->
       </div>
       <div class="button-group">
         <button @click="printPaySlip">Print Pay Slip</button>
@@ -37,7 +63,6 @@
     </div>
   </div>
 </template>
-
 <script>
 import { jsPDF } from "jspdf";
 export default {
@@ -47,39 +72,55 @@ export default {
       errorMessage: "",
       selectedRecord: null,
       baseRate: 400, // Example base rate per hour
-      payrollRecords: [
-        { payroll_id: 1000, employee_id: 1, hours_worked: 160, leave_deduction: 8, final_salary: 65000, performance: "Good" },
-        { payroll_id: 1001, employee_id: 2, hours_worked: 150, leave_deduction: 10, final_salary: 79000, performance: "Good" },
-        { payroll_id: 1002, employee_id: 3, hours_worked: 170, leave_deduction: 4, final_salary: 54800, performance: "Good" },
-        { payroll_id: 1003, employee_id: 4, hours_worked: 165, leave_deduction: 6, final_salary: 59700, performance: "Bad" },
-        { payroll_id: 1004, employee_id: 5, hours_worked: 158, leave_deduction: 5, final_salary: 57850, performance: "Bad" }
-      ]
     };
   },
   computed: {
     grossSalary() {
       return this.selectedRecord ? this.selectedRecord.hours_worked * this.baseRate : 0;
+    },
+    finalSalaryFormatted() {
+      // Ensure final_salary is a valid number
+      return this.selectedRecord?.final_salary !== undefined && this.selectedRecord?.final_salary !== null
+        ? Number(this.selectedRecord.final_salary).toFixed(2)
+        : "N/A";
     }
   },
   methods: {
-    fetchEmployeeRecord() {
+    async fetchEmployeeRecord() {
       this.selectedRecord = null;
       this.errorMessage = "";
       if (!this.searchId || this.searchId <= 0) {
         this.errorMessage = "Please enter a valid Employee ID.";
         return;
       }
-      const record = this.payrollRecords.find(emp => emp.employee_id === this.searchId);
-      if (record) {
-        this.selectedRecord = record;
-      } else {
-        this.errorMessage = "No payroll record found for the entered Employee ID.";
+      try {
+        const response = await fetch(`http://localhost:3500/payroll/${this.searchId}`);
+        if (!response.ok) {
+          throw new Error("Payroll record not found");
+        }
+        const data = await response.json();
+        // Ensure correct data structure & conversion
+        this.selectedRecord = data.payroll[0]
+          ? {
+              ...data.payroll[0],
+              final_salary: data.payroll[0].final_salary ? Number(data.payroll[0].final_salary) : null, // Convert to number
+            }
+          : null;
+        if (!this.selectedRecord) {
+          this.errorMessage = "No payroll record found for the entered Employee ID.";
+        }
+      } catch (error) {
+        this.errorMessage = "Error fetching payroll record.";
       }
     },
     printPaySlip() {
       window.print();
     },
     downloadPDF() {
+      if (!this.selectedRecord) {
+        this.errorMessage = "No record to download.";
+        return;
+      }
       const doc = new jsPDF();
       doc.text("Payslip", 90, 10);
       doc.text(`Employee ID: ${this.selectedRecord.employee_id}`, 10, 30);
@@ -88,14 +129,12 @@ export default {
       doc.text(`Leave Deduction: ${this.selectedRecord.leave_deduction}`, 10, 60);
       doc.text(`Base Rate: R${this.baseRate}`, 10, 70);
       doc.text(`Gross Salary: R${this.grossSalary.toFixed(2)}`, 10, 80);
-      doc.text(`Final Salary: R${this.selectedRecord.final_salary.toFixed(2)}`, 10, 90);
-      doc.text(`Performance: ${this.selectedRecord.performance}`, 10, 100);
+      doc.text(`Final Salary: R${this.finalSalaryFormatted}`, 10, 90);
       doc.save("Payslip.pdf");
-    }
-  }
+    },
+  },
 };
 </script>
-
 <style scoped>
 .payroll-container {
   max-width: 600px;
@@ -110,9 +149,10 @@ export default {
   border: 2px solid #333;
   padding: 15px;
   border-radius: 10px;
-  background: #f9f9f9;
+  background: #F9F9F9;
 }
-.payslip-header, .payslip-footer {
+.payslip-header,
+.payslip-footer {
   text-align: center;
   margin-bottom: 10px;
 }
@@ -139,6 +179,12 @@ button {
   transition: 0.3s;
 }
 button:hover {
-  background: #0056b3;
+  background: #0056B3;
 }
 </style>
+
+
+
+
+
+

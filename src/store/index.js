@@ -2,53 +2,72 @@ import { createStore } from 'vuex'
 
 export default createStore({
   state: {
-    employees: null,
-    editForm: {employeeId: null,
+    // Stores employee data
+    employees: [],
+    // Stores form data when an employee is being edited
+    editForm: {
+      employee_id: null,
       name: '',
       position: '',
-      departmentId: '',
-      employmentHistory: '',
+      department_id: '',
+      employment_history: '',
       contact: ''
     },
+    // Boolean flag to track if edit mode is active
     editing: false    
-
   },
+  
   getters: {},
+
   mutations: {
+    // Mutation to store employees in state
     getEmployees(state, payload) {
-      console.log('Committing employees:', payload);  // Log to verify the data
-      state.employees = payload;  // Update the state with the fetched data
+      console.log('Committing employees:', payload);
+      state.employees = payload;  
     },
+
+    // Deletes an employee from state after successful backend deletion
     deleteEmployee(state, employee_id) {
       state.employees = state.employees.filter(emp => emp.employee_id !== employee_id);
     },
+
+    // Adds a new employee to the list
     addEmployee(state, newEmployee) {
-      state.employees.push(newEmployee);  // Add new employee to the state
-    }, 
-    // Set the employee data for editing
-    setEditEmployee(state, employee) {
-      state.editForm = { ...employee };  // Clone the employee object to avoid mutation
+      state.employees.push(newEmployee);
     },
-    // Update the employee information in the list after editing
+
+    // Stores the employee data that needs to be edited
+    setEditEmployee(state, employee) {
+      state.editForm = { ...employee };  // Creates a copy to prevent direct mutations
+      state.editing = true;  // Activates edit mode
+    },
+
+    // Updates an employee’s information in the state after an edit
     updateEmployeeInformation(state, updatedEmployee) {
-      const index = state.employees.findIndex(employee => employee.employee_id === updatedEmployee.employee_id);
+      const index = state.employees.findIndex(emp => emp.employee_id === updatedEmployee.employee_id);
       if (index !== -1) {
-        // Replace the old employee data with the updated one
         state.employees[index] = updatedEmployee;
       }
+      state.editing = false;  // Disable edit mode after update
+    },
+
+    // Toggles editing mode on/off
+    SET_EDITING(state, status) {
+      state.editing = status;
     }
-  
   },
+
   actions: {
+    // Fetches all employees from the backend API
     async getData({ commit }) {
       try {
-        let response = await fetch('http://localhost:4000/employees');
-        let data = await response.json(); // Convert response to JSON
+        let response = await fetch('http://localhost:3500/employees');
+        let data = await response.json(); 
     
-        console.log(data); // Debugging to check API response
+        console.log(data); // Debugging API response
     
         if (data && Array.isArray(data.employee)) {
-          commit('getEmployees', data.employee); // Access the employee array and commit it
+          commit('getEmployees', data.employee);
         } else {
           console.error('Unexpected API response:', data);
         }
@@ -56,10 +75,11 @@ export default createStore({
         console.error('Error fetching employees:', error);
       }
     },
-  
+
+    // Deletes an employee from the database
     async deleteEmployee({ commit }, employee_id) {
       try {
-        let response = await fetch(`http://localhost:4000/employees/${employee_id}`, {
+        let response = await fetch(`http://localhost:3500/employees/${employee_id}`, {
           method: 'DELETE'
         });
         if (response.ok) {
@@ -69,19 +89,20 @@ export default createStore({
         console.error('Error deleting employee:', error);
       }
     },
-  
+
+    // Adds a new employee to the database
     async addEmployee({ commit }, newEmployee) {
       try {
-        let response = await fetch('http://localhost:4000/employees', {
+        let response = await fetch('http://localhost:3500/employees', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(newEmployee),
         });
-      
+
         let responseData = await response.json();
-        console.log('API Response:', responseData); // 🔍 Debugging: Check what the backend sends
+        console.log('API Response:', responseData);
       
         if (response.ok) {
           commit('addEmployee', responseData);
@@ -92,31 +113,34 @@ export default createStore({
         console.error('Error adding employee:', error);
       }
     },
-  
-    async setEditEmployee({ commit }, employee) {
-      commit('setEditEmployee', employee); // Setting employee data for editing
+
+    // Sets an employee for editing
+    setEditEmployee({ commit }, employee) {
+      commit('setEditEmployee', employee);
+      commit('SET_EDITING', true);  // Activate edit mode
     },
-  
-    async updateEmployee({ commit }, { employeeId, name, position, departmentId, employmentHistory, contact }) {
+
+    // Updates an employee in the database and Vuex state
+    async updateEmployee({ commit }, updatedEmployee) {
       try {
-        // Make the PATCH request to the backend
-        const response = await fetch(`http://localhost:3500/employees/${employeeId}`, {
-          method: 'PUT',
+        const response = await fetch(`http://localhost:3500/employees/${updatedEmployee.employee_id}`, {
+          method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ employeeId, name, position, departmentId, employmentHistory, contact })
+          body: JSON.stringify(updatedEmployee)
         });
-  
-        const updatedEmployee = await response.json();
+
+        const responseData = await response.json();
         if (response.ok) {
-          commit('updateEmployeeInformation', updatedEmployee.employee);  // Update store state
+          commit('updateEmployeeInformation', responseData.employee);
+          commit('SET_EDITING', false);  // Exit edit mode after successful update
         } else {
-          console.error('Error updating employee:', updatedEmployee.error);
+          console.error('Error updating employee:', responseData.error);
         }
       } catch (error) {
         console.error('Error updating employee:', error);
       }
     }
   },
-})  
+});
